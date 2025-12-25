@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Redirecting...</title>
+</head>
+<body>
+    <h3>Login Successful. Redirecting to your App...</h3>
+    <script>
+        // 1. Get the 'code' from the URL parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const code = urlParams.get('code');
+        const state = urlParams.get('state');
+
+        if (code) {
+            // 2. Bounce it to your local Windows app
+            // The app is listening on this specific local port
+            window.location.href = "http://localhost:5000/?code=" + code + "&state=" + state;
+        } else {
+            document.body.innerHTML = "<h3>Error: No login code found.</h3>";
+        }
+    </script>
+</body>
+</html>
