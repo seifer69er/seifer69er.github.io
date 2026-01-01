@@ -4,19 +4,37 @@
     <title>Redirecting...</title>
 </head>
 <body>
-    <h3>Login Successful. Redirecting to your App...</h3>
+    <div id="status">
+        <h3>Login Successful. Redirecting to your App...</h3>
+        <p>If you are not redirected automatically, <a id="manualLink" href="#">click here</a>.</p>
+    </div>
+
     <script>
-        // 1. Get the 'code' from the URL parameters
         const urlParams = new URLSearchParams(window.location.search);
         const code = urlParams.get('code');
         const state = urlParams.get('state');
 
         if (code) {
-            // 2. Bounce it to your local Windows app
-            // The app is listening on this specific local port
-            window.location.href = "http://localhost:5000/?code=" + code + "&state=" + state;
+            const isAndroid = /Android/i.test(navigator.userAgent);
+            let redirectUrl = "";
+
+            if (isAndroid) {
+                // For Android: Redirect back to the same URL. 
+                // Because of the Intent Filter in your App, Android will intercept this.
+                redirectUrl = "https://seifer69er.github.io/Tesla/callback.html" + window.location.search;
+            } else {
+                // For Windows: Redirect to the local listener.
+                redirectUrl = "http://localhost:5000/?code=" + code + "&state=" + state;
+            }
+
+            // Set the manual link just in case auto-redirect is blocked
+            document.getElementById('manualLink').href = redirectUrl;
+
+            // Perform the redirect
+            window.location.href = redirectUrl;
+
         } else {
-            document.body.innerHTML = "<h3>Error: No login code found.</h3>";
+            document.getElementById('status').innerHTML = "<h3>Error: No login code found.</h3>";
         }
     </script>
 </body>
