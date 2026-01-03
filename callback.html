@@ -2,39 +2,37 @@
 <html>
 <head>
     <title>Redirecting...</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
 <body>
-    <div id="status">
-        <h3>Login Successful. Redirecting to your App...</h3>
-        <p>If you are not redirected automatically, <a id="manualLink" href="#">click here</a>.</p>
-    </div>
-
     <script>
         const urlParams = new URLSearchParams(window.location.search);
         const code = urlParams.get('code');
         const state = urlParams.get('state');
 
         if (code) {
+            // Enhanced Detection:
+            // 1. Standard Regex for Android
+            // 2. Check for MacIntel + Touch (how iPads and modern Android tablets in "Desktop Mode" report)
             const isAndroid = /Android/i.test(navigator.userAgent);
-            let redirectUrl = "";
+            const isTabletDesktopMode = (navigator.maxTouchPoints > 1 && !/Windows/i.test(navigator.userAgent));
 
-            if (isAndroid) {
-                // For Android: Redirect back to the same URL. 
-                // Because of the Intent Filter in your App, Android will intercept this.
-                redirectUrl = "https://seifer69er.github.io/Tesla/callback.html" + window.location.search;
+            if (isAndroid || isTabletDesktopMode) {
+                // Redirect to the App using the Custom URI Scheme
+                window.location.replace("teslapowerwall://callback" + window.location.search);
+                
+                // Fallback: If the app doesn't open within 2 seconds, 
+                // it might be because the custom scheme failed.
+                setTimeout(() => {
+                    console.log("App did not catch the intent.");
+                }, 2000);
+
             } else {
-                // For Windows: Redirect to the local listener.
-                redirectUrl = "http://localhost:5000/?code=" + code + "&state=" + state;
+                // Windows / Actual Desktop: Send to the local listener
+                window.location.replace("http://localhost:5000/?code=" + code + "&state=" + state);
             }
-
-            // Set the manual link just in case auto-redirect is blocked
-            document.getElementById('manualLink').href = redirectUrl;
-
-            // Perform the redirect
-            window.location.href = redirectUrl;
-
         } else {
-            document.getElementById('status').innerHTML = "<h3>Error: No login code found.</h3>";
+            document.body.innerHTML = "<h3>Error: No authorization code received.</h3>";
         }
     </script>
 </body>
